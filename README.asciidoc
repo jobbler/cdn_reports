@@ -8,6 +8,16 @@ These scripts were written in order to help me determine where my subscriptions 
 
 The output of the main script, cd_report.py can be used as input to the cdn_host_remove.sh script to easily unregister systems.
 
+== Requirements
+
+These scripts are written in Python3 and Bash.
+
+The python script requires the natsort module
+* pip3 install natsort
+
+The bash scripts require the jq command.
+* dnf install jq
+
 == cdn_report.py
 
 This script can query CDN and display information about the poolusage, duplicate systems and days since last checking.
