@@ -147,7 +147,7 @@ def print_consumer_duplicates():
     for item in hosts:
         dup_num = len(hosts[item])
 
-        if dup_num > 0:
+        if dup_num > 1:
             duplicate_count += dup_num
             duplicate_systems += 1
 
