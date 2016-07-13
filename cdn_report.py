@@ -159,6 +159,16 @@ def print_consumer_duplicates():
         print("Duplicate systems: ", duplicate_count)
         print("Freeable systems: ", duplicate_count - duplicate_systems)
 
+        print("{:^3} | {:^74} | {:^12} | {:^8}".format( 
+            "Count",
+            "Name",
+            "Last Checkin (EPOCH)",
+            "ID",
+            )
+        )
+        print('-' * 124)
+  
+
     for sitem in natsorted(duplicatesortlist, reverse=reverse_sort):
         count, item = sitem.split(' ')
         print ( "# {:3} {:80} ".format(count, item), end="")

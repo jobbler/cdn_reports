@@ -108,6 +108,9 @@ Getting list of entitlements from CDN.
 Hosts with duplicates:  197
 Duplicate systems:  276
 Freeable systems:  79
+Count |           Name            | Last Checkin (EPOCH) |    ID   
+--------------------------------------------------------------------------------
+
 # 11  system-1                                 1466648032 12345678-abcd-1a2b3c4d
           1466639184 1b2b32b3-1234-867ab210
           1466132041 3b2ds525-abdd-a1b1c1d1
