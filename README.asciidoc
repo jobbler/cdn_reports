@@ -74,12 +74,12 @@ Getting list of hosts from CDN.
 Getting list of entitlements from CDN.
                           Name   |   Pool ID    | Quantity | Consumed | Exported
 --------------------------------------------------------------------------------
-Operating System 1               | 123456abcdef |      300 |      101 |       30
+Subscription 1                   | 123456abcdef |      300 |      101 |       30
      Attached Systems: |   System ID            | Name
                        | 12345678-abcd-1a2b3c4d | system-1  Last Checkin (days): 50
                        | 12345678-abcd-1a2eeeee | system-2  Last Checkin (days): 0
 
-Operating System 2               | aabbcc1122dd |       10 |        8 |        0
+Subscription 2                   | aabbcc1122dd |       10 |        8 |        0
      Attached Systems: |   System ID            | Name
                        | bcdef678-af5d-1a2cfd4d | system-3  Last Checkin (days): 9
                        | 12346fde-aeed-1a2abdce | system-4  Last Checkin (days): 5
