@@ -25,15 +25,15 @@ usagesortlist  = []
 requests.packages.urllib3.disable_warnings()
 
 parser = argparse.ArgumentParser(description="Query Red Hat CDN")
-parser.add_argument('--checkin',     action='store_true', help = 'Display days since host checkin') 
-parser.add_argument('--days',        type=int,            help = 'Display hosts who have not checked in within this number of days or longer.') 
-parser.add_argument('--poolusage',   action='store_true', help = 'Display the pool usage information')
-parser.add_argument('--duplicates',  action='store_true', help = 'Display information about duplicate hosts')
-parser.add_argument('--reverse',     action='store_true', help = 'Reverse the sort order of output')
-parser.add_argument('--user',        required=True,       help = 'CDN user account name. Required option.')
-parser.add_argument('--password' ,   required=True,       help = 'CDN user account password. Required option.')
-parser.add_argument('--ownerid',     required=True,       help = 'The org id of the CDN user, can be retrieved using the "subscription-manager identity" command on a registered system. Required option.')
-parser.add_argument('--silent',      action='store_true', help = 'Just print the data, no headers or information about what we are doing.')
+parser.add_argument('--checkin',    action='store_true', help = 'Display days since host checkin') 
+parser.add_argument('--days',       type=int,            help = 'Display hosts who have not checked in within this number of days or longer.') 
+parser.add_argument('--poolusage',  action='store_true', help = 'Display the pool usage information')
+parser.add_argument('--duplicates', action='store_true', help = 'Display information about duplicate hosts')
+parser.add_argument('--reverse',    action='store_true', help = 'Reverse the sort order of output')
+parser.add_argument('--user',       required=True,       help = 'CDN user account name. Required option.')
+parser.add_argument('--password',   required=True,       help = 'CDN user account password. Required option.')
+parser.add_argument('--ownerid',    required=True,       help = 'The org id of the CDN user, can be retrieved using the "subscription-manager identity" command on a registered system. Required option.')
+parser.add_argument('--silent',     action='store_true', help = 'Just print the data, no headers or information about what we are doing.')
 
 cliopts = parser.parse_args()
 
@@ -44,8 +44,8 @@ else:
     reverse_sort = False
 
 
-# Define functions
-#
+
+
 def print_checkin():
     # Print Checkin Report
     #
@@ -108,6 +108,7 @@ def print_pool_usage():
         else:
             quantity = pool[item]['quantity']
 
+#        print("\n" + '-' * 184)
         print("{:110} | {:34} | {:12} | {:8} | {:8}".format( 
             pool[item]['name'],
             item,
@@ -140,6 +141,7 @@ def print_consumer_duplicates():
         if name not in hosts:
             hosts[name] = {}
 
+#        hosts[name][seconds] = host
         hosts[name][seconds] = uuid
 
     for item in hosts:
@@ -177,83 +179,65 @@ def print_consumer_duplicates():
 
 
 
-# Get the json data from CDN
+
+# Build a dictionary of all the pools
 #
-
-cdn_pools_session        = requests.Session()
-cdn_hosts_session        = requests.Session()
-cdn_entitlements_session = requests.Session()
-
-cdn_pools_session.auth        = (cliopts.user, cliopts.password)
-cdn_hosts_session.auth        = (cliopts.user, cliopts.password)
-cdn_entitlements_session.auth = (cliopts.user, cliopts.password)
 
 if not cliopts.silent:
     print("Getting list of pools from CDN.")
 
-cdn_pools_request = cdn_pools_session.get( 'https://subscription.rhn.redhat.com/subscription/owners/{}/pools?include=id&include=productName&include=quantity&include=consumed&include=exported'.format( cliopts.ownerid ), verify=False)
-
-if not cliopts.silent:
-    print("Getting list of hosts from CDN.")
-
-cdn_hosts_request = cdn_hosts_session.get( 
-    'https://subscription.rhn.redhat.com/subscription/owners/{}/consumers?include=id&include=uuid&include=name&include=lastCheckin&include=created'.format( cliopts.ownerid ),
-    verify=False
+cdn_request = requests.get(
+    'https://subscription.rhn.redhat.com/subscription/owners/{}/pools?include=id&include=productName&include=quantity&include=consumed&include=exported'.format( cliopts.ownerid ),
+    auth=(cliopts.user, cliopts.password), 
+    verify=False,
     )
 
-if not cliopts.silent:
-    print("Getting list of entitlements from CDN.")
+#print ( cdn_request.text )
 
-cdn_entitlements_request = cdn_entitlements_session.get(
-    'https://subscription.rhn.redhat.com/subscription/owners/{}/entitlements?include=id&include=consumer.name&include=consumer.id&include=pool.productName&include=pool.id'.format( cliopts.ownerid ),
-    verify=False
-    )
+jsonobj = json.loads( cdn_request.text.lower() )
 
+#print ( json.dumps(jsonobj, indent=4, sort_keys=True) )
 
-# Pull the requests into the JSON handler
-#
-pool_json = json.loads( cdn_pools_request.text )
-hosts_json = json.loads( cdn_hosts_request.text )
-entitlement_json = json.loads( cdn_entitlements_request.text )
-
-if "displayMessage" in pool_json:
-    print (pool_json["displayMessage"])
-    sys.exit()
-
-if "displayMessage" in hosts_json:
-    print (hosts_json["displayMessage"])
-    sys.exit()
-
-if "displayMessage" in entitlement_json:
-    print (entitlement_json["displayMessage"])
-    sys.exit()
-
-
-# Build a dictionary of all the pools
-#
-for poolkey in pool_json:
+for poolkey in jsonobj:
     pool[ poolkey["id"] ] = {
         'quantity': poolkey["quantity"],
         'consumed': poolkey["consumed"],
         'exported': poolkey["exported"],
-        'name':     poolkey["productName"],
+        'name':     poolkey["productname"],
         'usage':    [],
         }
 
-
 # Get consumer information
 #
-for ckey in hosts_json:
+#jsonobj = json.loads( open('owners_consumers.json').read() )
+
+if not cliopts.silent:
+    print("Getting list of hosts from CDN.")
+
+cdn_request = requests.get(
+    'https://subscription.rhn.redhat.com/subscription/owners/{}/consumers?include=id&include=uuid&include=name&include=lastCheckin&include=created'.format( cliopts.ownerid ),
+    auth=(cliopts.user, cliopts.password), 
+    verify=False,
+    )
+
+#print ( cdn_request.text )
+
+jsonobj = json.loads( cdn_request.text.lower() )
+
+#print ( json.dumps(jsonobj, indent=4, sort_keys=True) )
+
+
+for ckey in jsonobj:
     if not ckey["created"]:
         secs_create = "0"
     else:
         secs_create = datetime.strptime(ckey["created"], "%Y-%m-%dT%H:%M:%S.000+0000").strftime("%s")
 
-    if not ckey["lastCheckin"]:
+    if not ckey["lastcheckin"]:
         secs_checkin = 0
         days_checkin = 0
     else:
-        secs_checkin = datetime.strptime(ckey["lastCheckin"], "%Y-%m-%dT%H:%M:%S.000+0000").strftime("%s")
+        secs_checkin = datetime.strptime(ckey["lastcheckin"], "%Y-%m-%dT%H:%M:%S.000+0000").strftime("%s")
         days_checkin = int( ( int( time.time() ) - int( secs_checkin ) ) / 86400 )
 
     if days_checkin < 0:
@@ -274,9 +258,27 @@ for ckey in hosts_json:
 
 # Loop through pool entitlements to get usage
 #
-for usagekey in entitlement_json:
+#jsonobj = json.loads( open('owners_entitlements.json').read() )
+
+if not cliopts.silent:
+    print("Getting list of entitlements from CDN.")
+cdn_request = requests.get(
+    'https://subscription.rhn.redhat.com/subscription/owners/{}/entitlements?include=id&include=consumer.name&include=consumer.id&include=pool.productName&include=pool.id'.format( cliopts.ownerid ),
+    auth=(cliopts.user, cliopts.password), 
+    verify=False,
+    )
+
+#print ( cdn_request.text )
+
+jsonobj = json.loads( cdn_request.text.lower() )
+
+#print ( json.dumps(jsonobj, indent=4, sort_keys=True) )
+
+for usagekey in jsonobj:
+#    print ( "consumer id: {}".format(usagekey["consumer"]["id"]) )
     consumer[ usagekey["consumer"]["id"] ]["entitlementcount"] += 1
 
+#    print ( "pool: {}".format(usagekey["pool"]) )
     pool[usagekey["pool"]["id"]]["usage"].append( usagekey["consumer"]["id"] )
 
 
