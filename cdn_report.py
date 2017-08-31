@@ -187,7 +187,7 @@ if not cliopts.silent:
     print("Getting list of pools from CDN.")
 
 cdn_request = requests.get(
-    'https://subscription.rhn.redhat.com/subscription/owners/{}/pools?include=id&include=productName&include=quantity&include=consumed&include=exported'.format( cliopts.ownerid ),
+    'https://subscription.rhsm.redhat.com/subscription/owners/{}/pools?include=id&include=productName&include=quantity&include=consumed&include=exported'.format( cliopts.ownerid ),
     auth=(cliopts.user, cliopts.password), 
     verify=False,
     )
@@ -215,7 +215,7 @@ if not cliopts.silent:
     print("Getting list of hosts from CDN.")
 
 cdn_request = requests.get(
-    'https://subscription.rhn.redhat.com/subscription/owners/{}/consumers?include=id&include=uuid&include=name&include=lastCheckin&include=created'.format( cliopts.ownerid ),
+    'https://subscription.rhsm.redhat.com/subscription/owners/{}/consumers?include=id&include=uuid&include=name&include=lastCheckin&include=created'.format( cliopts.ownerid ),
     auth=(cliopts.user, cliopts.password), 
     verify=False,
     )
@@ -263,7 +263,7 @@ for ckey in jsonobj:
 if not cliopts.silent:
     print("Getting list of entitlements from CDN.")
 cdn_request = requests.get(
-    'https://subscription.rhn.redhat.com/subscription/owners/{}/entitlements?include=id&include=consumer.name&include=consumer.id&include=pool.productName&include=pool.id'.format( cliopts.ownerid ),
+    'https://subscription.rhsm.redhat.com/subscription/owners/{}/entitlements?include=id&include=consumer.name&include=consumer.id&include=pool.productName&include=pool.id'.format( cliopts.ownerid ),
     auth=(cliopts.user, cliopts.password), 
     verify=False,
     )

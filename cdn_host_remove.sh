@@ -48,7 +48,7 @@ done
   for i in $( cat ${options[file]} | grep -v "^$|^#|^;" )
   do
     echo "    $i"
-    curl --silent -X DELETE -u ${options[user]}:${options[password]} -k "https://subscription.rhn.redhat.com/subscription/consumers/$i" | jq ".displayMessage"
+    curl --silent -X DELETE -u ${options[user]}:${options[password]} -k "https://subscription.rhsm.redhat.com/subscription/consumers/$i" | jq ".displayMessage"
     (( count++ ))
   done
 
