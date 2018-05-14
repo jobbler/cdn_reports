@@ -231,13 +231,13 @@ for ckey in jsonobj:
     if not ckey["created"]:
         secs_create = "0"
     else:
-        secs_create = datetime.strptime(ckey["created"], "%Y-%m-%dT%H:%M:%S.000+0000").strftime("%s")
+        secs_create = datetime.strptime(ckey["created"], "%Y-%m-%dT%H:%M:%S+0000").strftime("%s")
 
     if not ckey["lastcheckin"]:
         secs_checkin = 0
         days_checkin = 0
     else:
-        secs_checkin = datetime.strptime(ckey["lastcheckin"], "%Y-%m-%dT%H:%M:%S.000+0000").strftime("%s")
+        secs_checkin = datetime.strptime(ckey["lastcheckin"], "%Y-%m-%dT%H:%M:%S+0000").strftime("%s")
         days_checkin = int( ( int( time.time() ) - int( secs_checkin ) ) / 86400 )
 
     if days_checkin < 0:
