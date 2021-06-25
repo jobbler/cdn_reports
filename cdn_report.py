@@ -27,7 +27,6 @@ requests.packages.urllib3.disable_warnings()
 parser = argparse.ArgumentParser(description="Query Red Hat CDN")
 parser.add_argument('--checkin',    action='store_true', help = 'Display days since host checkin') 
 parser.add_argument('--days',       type=int,            help = 'Display hosts who have not checked in within this number of days or longer.') 
-parser.add_argument('--poolusage',  action='store_true', help = 'Display the pool usage information')
 parser.add_argument('--duplicates', action='store_true', help = 'Display information about duplicate hosts')
 parser.add_argument('--reverse',    action='store_true', help = 'Reverse the sort order of output')
 parser.add_argument('--user',       required=True,       help = 'CDN user account name. Required option.')
@@ -225,20 +224,29 @@ cdn_request = requests.get(
 jsonobj = json.loads( cdn_request.text.lower() )
 
 #print ( json.dumps(jsonobj, indent=4, sort_keys=True) )
+#sys.exit("debug done")
 
 
 for ckey in jsonobj:
     if not ckey["created"]:
         secs_create = "0"
     else:
-        secs_create = datetime.strptime(ckey["created"], "%Y-%m-%dT%H:%M:%S.000+0000").strftime("%s")
+        try:
+            secs_create = datetime.strptime(ckey["created"], "%Y-%m-%dt%H:%M:%S+0000").strftime("%s")
+        except:
+            secs_create = datetime.strptime(ckey["created"], "%Y-%m-%dt%H:%M:%S.000+0000").strftime("%s")
 
     if not ckey["lastcheckin"]:
         secs_checkin = 0
         days_checkin = 0
     else:
-        secs_checkin = datetime.strptime(ckey["lastcheckin"], "%Y-%m-%dT%H:%M:%S.000+0000").strftime("%s")
-        days_checkin = int( ( int( time.time() ) - int( secs_checkin ) ) / 86400 )
+        try:
+            secs_checkin = datetime.strptime(ckey["lastcheckin"], "%Y-%m-%dT%H:%M:%S+0000").strftime("%s")
+        except:
+            secs_checkin = datetime.strptime(ckey["lastcheckin"], "%Y-%m-%dT%H:%M:%S.000+0000").strftime("%s")
+
+
+    days_checkin = int( ( int( time.time() ) - int( secs_checkin ) ) / 86400 )
 
     if days_checkin < 0:
         days_checkin = "0"
@@ -256,32 +264,6 @@ for ckey in jsonobj:
     consumersortlist.append( "{} {}".format( days_checkin, ckey["id"] ) )
 
 
-# Loop through pool entitlements to get usage
-#
-#jsonobj = json.loads( open('owners_entitlements.json').read() )
-
-if not cliopts.silent:
-    print("Getting list of entitlements from CDN.")
-cdn_request = requests.get(
-    'https://subscription.rhsm.redhat.com/subscription/owners/{}/entitlements?include=id&include=consumer.name&include=consumer.id&include=pool.productName&include=pool.id'.format( cliopts.ownerid ),
-    auth=(cliopts.user, cliopts.password), 
-    verify=False,
-    )
-
-#print ( cdn_request.text )
-
-jsonobj = json.loads( cdn_request.text.lower() )
-
-#print ( json.dumps(jsonobj, indent=4, sort_keys=True) )
-
-for usagekey in jsonobj:
-#    print ( "consumer id: {}".format(usagekey["consumer"]["id"]) )
-    consumer[ usagekey["consumer"]["id"] ]["entitlementcount"] += 1
-
-#    print ( "pool: {}".format(usagekey["pool"]) )
-    pool[usagekey["pool"]["id"]]["usage"].append( usagekey["consumer"]["id"] )
-
-
 # ----------------------------
 
 
@@ -289,16 +271,8 @@ for usagekey in jsonobj:
 if cliopts.checkin:
     print_checkin()
 
-if cliopts.poolusage:
-    print_pool_usage()
-
-
 if cliopts.duplicates:
     print_consumer_duplicates()
-
-# if __name__ == '__main__':
-# 
-#     main()
 
 
 
